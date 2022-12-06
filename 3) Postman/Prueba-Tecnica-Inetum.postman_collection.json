@@ -1,0 +1,80 @@
+{
+	"info": {
+		"_postman_id": "f7704fbe-a4a7-4fcf-ae10-5b7b800275db",
+		"name": "Prueba-Tecnica-Inetum",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "TraerAutores",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:7165/api/autor",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7165",
+					"path": [
+						"api",
+						"autor"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GuardarEditorial",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"nombre\": \"Círculo de Lectores\",\r\n  \"sede\": \"Bogotá\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:7165/api/editorial",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7165",
+					"path": [
+						"api",
+						"editorial"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "TraerAutoresPorEditorial",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:7165/api/autor/editorial/1",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7165",
+					"path": [
+						"api",
+						"autor",
+						"editorial",
+						"1"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

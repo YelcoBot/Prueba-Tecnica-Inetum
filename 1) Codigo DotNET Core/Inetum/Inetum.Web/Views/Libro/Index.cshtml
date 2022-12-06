@@ -1,0 +1,297 @@
+﻿@using Inetum.Datos.Modelos
+@{
+    ViewData["Title"] = "Libros";
+}
+
+
+<div class="card">
+    <div class="card-header">
+        Libros
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-7">
+                @using (Html.BeginForm("GetData", "Libro", FormMethod.Post, new { id = "FormBusqLibro", onsubmit = "return false;" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label for="Titulo">Titulo</label>
+                            @Html.TextBox("Titulo",null,new {type="text", id="Titulo"})
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-success">Buscar</button>
+                        </div>
+                    </div>
+                }
+
+            </div>
+            <div class="col-md-5">
+                <button id="btnNuevoLibro" type="button" class="btn btn-success">Nuevo Libro</button>
+            </div>
+        </div>
+        <br />
+        <br />
+
+        <div id="GridLibros" class="row ">
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="modalLibro" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Modal title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary close" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        $(document).ready(function () {
+
+            getDataLibros("");
+
+            $(document).on("click", "#btnNuevoLibro", function () {
+                $("#modalLibro .modal-title").empty().html("Nuevo Libro");
+                getFormLibro("Create");
+            });
+
+            $(document).on("click", ".btn-edit", function () {
+                $("#modalLibro .modal-title").empty().html("Editar Libro");
+                let isbn = $(this).data("isbn");
+                getFormLibro("Edit", isbn);
+            });
+
+            $(document).on("click", ".btn-view", function () {
+                $("#modalLibro .modal-title").empty().html("Detalle del Libro");
+                let isbn = $(this).data("isbn");
+                getFormLibro("View", isbn);
+            });
+
+            $(document).on("click", ".btn-delete", function () {
+                $("#modalLibro .modal-title").empty().html("Detalle del Libro");
+                let isbn = $(this).data("isbn");
+                Swal.fire({
+                    title: 'Estas seguro?',
+                    text: "¡No podrás revertir esto!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: '¡Sí, bórralo!',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+
+                        var url = "/Libro/Delete?isbn=" + isbn;
+                        $.ajax({
+                            url: url,
+                            dataType: "json",
+                            type: "DELETE",
+                            success: function (data) {
+                                if (data.succeeded) {
+                                    getDataLibros("");
+                                    Swal.fire(
+                                        'Eliminado!',
+                                        'El libro se ha eliminado.',
+                                        'success'
+                                    );
+                                } else {
+                                    data.errors.forEach(function (error) {
+                                        Toastify({
+                                            text: error,
+                                            duration: 6000,
+                                            newWindow: true,
+                                            close: true,
+                                            gravity: "bottom",
+                                            position: "right",
+                                            stopOnFocus: true,
+                                            style: {
+                                                background: "linear-gradient(to right, #00b09b, #96c93d)",
+                                            }
+                                        }).showToast();
+                                    });
+                                }
+
+                            },
+                            error: function (error) {
+                                console.log("Error request:");
+                                console.log(error)
+
+                                Toastify({
+                                    text: "Ha ocurrido un error en la aplicación!!",
+                                    duration: 6000,
+                                    newWindow: true,
+                                    close: true,
+                                    gravity: "bottom",
+                                    position: "right",
+                                    stopOnFocus: true,
+                                    style: {
+                                        background: "linear-gradient(to right, #00b09b, #96c93d)",
+                                    }
+                                }).showToast();
+                            }
+                        });
+
+
+                    }
+                });
+            });
+
+            $(document).on("click", "#modalLibro .close", function () {
+                $("#modalLibro").modal("hide");
+            });
+
+            $(document).on("submit", "#FormBusqLibro", function () {
+                let titulo = $("#FormBusqLibro #Titulo").val();
+                getDataLibros(titulo);
+            });
+
+            $(document).on("submit", "#FormLibro", function () {
+
+                let accion = $("#FormLibro #Tipo").val();
+
+                alert(accion);
+
+                let data = $(this).serialize();
+
+                var url = "/Libro/SaveOrUpdate?accion=" + accion;
+
+                $.ajax({
+                    url: url,
+                    dataType: "json",
+                    type: "POST",
+                    data: data,
+                    success: function (data) {
+                        if (data.succeeded) {
+                            $("#modalLibro").modal("hide");
+                            getDataLibros("");
+                        } else {
+                            data.errors.forEach(function (error) {
+                                Toastify({
+                                    text: error,
+                                    duration: 6000,
+                                    newWindow: true,
+                                    close: true,
+                                    gravity: "bottom",
+                                    position: "right",
+                                    stopOnFocus: true,
+                                    style: {
+                                        background: "linear-gradient(to right, #00b09b, #96c93d)",
+                                    }
+                                }).showToast();
+                            });
+                        }
+
+                    },
+                    error: function (error) {
+                        console.log("Error request:");
+                        console.log(error)
+
+                        Toastify({
+                            text: "Ha ocurrido un error en la aplicación!!",
+                            duration: 6000,
+                            newWindow: true,
+                            close: true,
+                            gravity: "bottom",
+                            position: "right",
+                            stopOnFocus: true,
+                            style: {
+                                background: "linear-gradient(to right, #00b09b, #96c93d)",
+                            }
+                        }).showToast();
+                    }
+                });
+
+            });
+
+        });
+
+        function getFormLibro(accion, isbn) {
+            var url = "/Libro/GetForm?accion=" + accion + "&isbn=" + isbn;
+            $.ajax({
+                url: url,
+                dataType: "html",
+                type: "POST",
+                success: function (data) {
+                    $("#modalLibro .modal-body").empty().html(data);
+
+                    $("#modalLibro #EditorialId").select2({
+                        dropdownParent: $('#modalLibro')
+                    });
+
+                    $("#modalLibro #Autores").select2({
+                        dropdownParent: $('#modalLibro')
+                    });
+
+                    if (accion == "View") {
+                        $("#modalLibro .form-control").prop('disabled', true).trigger("change");
+                        $("#modalLibro .btn-save").hide();
+                    } else {
+                        $("#modalLibro .form-control").prop('disabled', false).trigger("change");
+                        $("#modalLibro .btn-save").show();
+                    }
+
+                    $("#modalLibro").modal("show");
+                },
+                error: function (error) {
+                    console.log("Error request:");
+                    console.log(error)
+
+                    Toastify({
+                        text: "Ha ocurrido un error en la aplicación!!",
+                        duration: 6000,
+                        newWindow: true,
+                        close: true,
+                        gravity: "bottom",
+                        position: "right",
+                        stopOnFocus: true,
+                        style: {
+                            background: "linear-gradient(to right, #00b09b, #96c93d)",
+                        }
+                    }).showToast();
+                }
+            });
+        }
+        function getDataLibros(titulo) {
+            var url = "/Libro/GetData?Titulo=" + titulo
+            $.ajax({
+                url: url,
+                dataType: "html",
+                type: "POST",
+                success: function (data) {
+                    $("#GridLibros").empty().html(data);
+                },
+                error: function (error) {
+                    console.log("Error request:");
+                    console.log(error)
+
+                    Toastify({
+                        text: "Ha ocurrido un error en la aplicación!!",
+                        duration: 6000,
+                        newWindow: true,
+                        close: true,
+                        gravity: "bottom",
+                        position: "right",
+                        stopOnFocus: true,
+                        style: {
+                            background: "linear-gradient(to right, #00b09b, #96c93d)",
+                        }
+                    }).showToast();
+                }
+            });
+        }
+    </script>
+}
+
+

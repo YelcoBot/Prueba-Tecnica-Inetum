@@ -1,0 +1,23 @@
+﻿@using Inetum.Datos.Modelos;
+@model List<Inetum.Datos.Modelos.Libro>;
+@{
+    Layout = null;
+}
+
+@foreach (Libro libro in Model)
+{
+    <div class="col-6">
+        <div class="card" style="width: 100%;">
+            <div class="card-body">
+                <h5 class="card-title">@(libro?.Titulo)</h5>
+                <h6 class="card-subtitle mb-2 text-muted">
+                    @($@"{libro?.Editorial?.Nombre} - {libro?.Editorial?.Sede}")
+                </h6>
+                <p class="card-text">@(libro?.Sinopsis)</p>
+                <button type="button" class="btn btn-primary btn-view" data-isbn='@(libro?.Isbn)'>Detalle</button>
+                <button type='button' class='btn btn-warning btn-edit' data-isbn='@(libro?.Isbn)'>Editar</button>
+                <button type='button' class='btn btn-danger btn-delete' data-isbn='@(libro?.Isbn)'>Eliminar</button>
+            </div>
+        </div>
+    </div>
+}
